@@ -103,6 +103,7 @@ const App = () => {
 
   const submitNewTask = async () => {
     const { title, description, status, _id } = newTask;
+    
     if (!title || !description) return alert('Pola nie mogą być puste');
     if (_id) {
       const res = await axios.put(`${API}/tasks/${_id}`, { title, description, status }, authHeader);
@@ -113,6 +114,7 @@ const App = () => {
         { title, description, status, boardId: selectedBoard },
         authHeader
       );
+
       setTasks([...tasks, res.data]);
     }
     setShowTaskForm(false);

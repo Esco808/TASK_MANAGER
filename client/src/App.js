@@ -103,7 +103,7 @@ const App = () => {
 
   const submitNewTask = async () => {
     const { title, description, status, _id } = newTask;
-    
+
     if (!title || !description) return alert('Pola nie mogą być puste');
     if (_id) {
       const res = await axios.put(`${API}/tasks/${_id}`, { title, description, status }, authHeader);
@@ -160,39 +160,50 @@ const App = () => {
         <button onClick={() => setShowBoardForm(true)}>+ Nowa tablica</button>
         <button onClick={logout}>Wyloguj</button>
       </header>
-      <ul className="board-list">
-        {boards.map((b) => (
-          <li key={b._id}>
-            <span onClick={() => loadTasks(b._id)}>{b.name}</span>
-            <button onClick={() => openBoardEditForm(b)}>Edytuj</button>
-            <button onClick={() => deleteBoard(b._id)}>Usuń</button>
-          </li>
-        ))}
-      </ul>
+      <table className="board-table">
+        <tbody>
+          {boards.map((b) => (
+            <tr key={b._id}>
+              <td onClick={() => loadTasks(b._id)} style={{ cursor: 'pointer', fontWeight: 'bold' }}>
+                {b.name}
+              </td>
+              <td className="actions-cell">
+                <button onClick={() => openBoardEditForm(b)}>Edytuj</button>
+              </td>
+              <td className="actions-cell">
+                <button onClick={() => deleteBoard(b._id)}>Usuń</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {selectedBoard && (
         <div className="kanban">
           <h3>Kanban</h3>
           <div className="columns">
-            {['TO DO', 'IN PROGRESS', 'DONE'].map((status) => (
-              <div key={status} className="column">
-                <h4>{status}</h4>
-                <button onClick={() => openTaskForm(status)}>+ Dodaj</button>
-                {tasks.filter((t) => t.status === status).map((task) => (
-                  <div key={task._id} className="task">
-                    <strong>{task.title}</strong>
-                    <p>{task.description}</p>
-                    <div className="actions">
-                      {['TO DO', 'IN PROGRESS', 'DONE'].filter(s => s !== status).map((s) => (
-                        <button key={s} onClick={() => updateTaskStatus(task._id, s)}>{s}</button>
-                      ))}
-                      <button onClick={() => editTask(task)}>Edytuj</button>
-                      <button onClick={() => deleteTask(task._id)}>Usuń</button>
+            {['TO DO', 'IN PROGRESS', 'DONE'].map((status) => {
+              const className = status.toLowerCase().replace(/\s/g, '-');
+              return (
+                <div key={status} className={`column ${className}`}>
+                  <h4>{status}</h4>
+                  <button onClick={() => openTaskForm(status)}>+ Dodaj</button>
+                  {tasks.filter((t) => t.status === status).map((task) => (
+                    <div key={task._id} className="task">
+                      <strong>{task.title}</strong>
+                      <p>{task.description}</p>
+                      <div className="actions">
+                        {['TO DO', 'IN PROGRESS', 'DONE'].filter(s => s !== status).map((s) => (
+                          <button key={s} onClick={() => updateTaskStatus(task._id, s)}>{s}</button>
+                        ))}
+                        <button onClick={() => editTask(task)}>Edytuj</button>
+                        <button onClick={() => deleteTask(task._id)}>Usuń</button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ))}
+                  ))}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

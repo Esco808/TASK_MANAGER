@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import './App.css';
 import BoardForm from './components/BoardForm';
 import BoardEditForm from './components/BoardEditForm';
 import TaskForm from './components/TaskForm';
+import AdminPanel from './components/AdminPanel';
 
 const API = 'http://localhost:5000/api';
 
@@ -24,7 +26,21 @@ const App = () => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', description: '', status: '', _id: null });
 
+  const [userRole, setUserRole] = useState('');
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUserRole(decoded.role || '');
+      } catch (err) {
+        console.error('Błąd dekodowania tokena:', err);
+        setUserRole('');
+      }
+    }
+  }, []);
 
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -34,6 +50,10 @@ const App = () => {
       const res = await axios.post(`${API}/login`, { username, password });
       localStorage.setItem('token', res.data.token);
       setToken(res.data.token);
+
+      const decoded = jwtDecode(res.data.token);
+      setUserRole(decoded.role || '');
+      setShowAdminPanel(false);
       setFormError('');
     } catch {
       setFormError('Błędne dane logowania');
@@ -52,6 +72,8 @@ const App = () => {
     setBoards([]);
     setTasks([]);
     setSelectedBoard(null);
+    setUserRole('');
+    setShowAdminPanel(false);
   };
 
   const loadBoards = async () => {
@@ -158,6 +180,9 @@ const App = () => {
       <header>
         <h2>Twoje tablice</h2>
         <button onClick={() => setShowBoardForm(true)}>+ Nowa tablica</button>
+        {userRole === 'admin' || userRole === 'moderator' ? (
+          <button onClick={() => setShowAdminPanel(prev => !prev)}>Panel admina</button>
+        ) : null}
         <button onClick={logout}>Wyloguj</button>
       </header>
       <table className="board-table">
@@ -177,6 +202,10 @@ const App = () => {
           ))}
         </tbody>
       </table>
+
+      {showAdminPanel && (
+        <AdminPanel token={token} currentUserRole={userRole} />
+      )}
 
       {selectedBoard && (
         <div className="kanban">

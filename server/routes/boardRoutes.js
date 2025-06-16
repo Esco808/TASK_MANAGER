@@ -1,20 +1,21 @@
 const express = require('express');
 const { body } = require('express-validator');
-const auth = require('../middleware/authMiddleware');
+const authenticateToken = require('../middleware/authenticateToken');
+const authorizeRoles = require('../middleware/authorizeRoles');
 const { getBoards, createBoard, updateBoard, deleteBoard } = require('../controllers/boardController');
 
 const router = express.Router();
 
-router.get('/', auth, getBoards);
+router.get('/', authenticateToken, getBoards);
 
-router.post('/', auth, [
+router.post('/', authenticateToken, [
   body('name').isString().trim().isLength({ min: 3 })
 ], createBoard);
 
-router.put('/:id', auth, [
+router.put('/:id', authenticateToken, [
   body('name').isString().trim().isLength({ min: 3 })
 ], updateBoard);
 
-router.delete('/:id', auth, deleteBoard);
+router.delete('/:id', authenticateToken, deleteBoard);
 
 module.exports = router;

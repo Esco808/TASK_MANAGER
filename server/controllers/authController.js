@@ -14,7 +14,7 @@ exports.register = async (req, res) => {
   if (existing) return res.status(400).json({ error: 'Użytkownik już istnieje' });
 
   const hashed = await bcrypt.hash(password, 10);
-  await new User({ username, password: hashed }).save();
+  await new User({ username, password: hashed, role: 'user' }).save();
   res.status(201).json({ message: 'Zarejestrowano pomyślnie' });
 };
 
@@ -28,6 +28,7 @@ exports.login = async (req, res) => {
     return res.status(401).json({ error: 'Nieprawidłowe dane logowania' });
   }
 
-  const token = jwt.sign({ id: user._id }, SECRET, { expiresIn: '1h' });
+  const token = jwt.sign({ id: user._id, role: user.role }, SECRET, { expiresIn: '1h' });
+
   res.json({ token });
 };

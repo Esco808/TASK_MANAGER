@@ -19,7 +19,13 @@ app.use((req, res, next) => {
   next();
 });
 
-mongoose.connect('mongodb://localhost:27017/kanban');
+mongoose.connect('mongodb://localhost:27017/kanban')
+  .then(() => {
+    console.info('Connected to MongoDB at mongodb://localhost:27017/kanban');
+  })
+  .catch((err) => {
+    console.error('Failed to connect to MongoDB', err);
+  });
 
 app.use('/api', authRoutes);
 app.use('/api/boards', boardRoutes);

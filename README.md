@@ -5,7 +5,7 @@
 cd server
 npm start
 ```
-3. Run client
+3. Run client in another terminal
 ```bash
 cd ../client
 npm start

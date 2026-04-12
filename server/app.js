@@ -19,9 +19,11 @@ app.use((req, res, next) => {
   next();
 });
 
-mongoose.connect('mongodb://localhost:27017/kanban')
+const DB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kanban';
+
+mongoose.connect(DB_URI)
   .then(() => {
-    console.info('Connected to MongoDB at mongodb://localhost:27017/kanban');
+    console.info(`Connected to MongoDB at ${DB_URI}`);
   })
   .catch((err) => {
     console.error('Failed to connect to MongoDB', err);

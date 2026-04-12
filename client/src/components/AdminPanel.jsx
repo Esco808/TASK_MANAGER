@@ -5,7 +5,9 @@ const AdminPanel = ({ token, currentUserRole }) => {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
 
-  const API = 'http://localhost:5000/api/admin';
+  const API = process.env.REACT_APP_API_URL 
+  ? `${process.env.REACT_APP_API_URL}/admin` 
+  : 'http://localhost:5000/api/admin';
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
   const loadUsers = async () => {

@@ -9,7 +9,7 @@ const httpError = (status, message) => {
   return err;
 };
 
-const SECRET = process.env.JWT_SECRET;
+const SECRET = process.env.JWT_SECRET || 'kanban-secret';
 
 exports.register = async (req, res) => {
   const errors = validationResult(req);

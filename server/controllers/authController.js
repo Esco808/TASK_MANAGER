@@ -3,15 +3,25 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 
-const SECRET = 'kanban-secret';
+const httpError = (status, message) => {
+  const err = new Error(message);
+  err.status = status;
+  return err;
+};
+
+const SECRET = process.env.JWT_SECRET;
 
 exports.register = async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  if (!errors.isEmpty()) {
+    throw httpError(400, 'Niepoprawne dane wejściowe');
+  }
 
   const { username, password } = req.body;
   const existing = await User.findOne({ username });
-  if (existing) return res.status(400).json({ error: 'Użytkownik już istnieje' });
+  if (existing) {
+    throw httpError(409, 'Użytkownik już istnieje');
+  }
 
   const hashed = await bcrypt.hash(password, 10);
   await new User({ username, password: hashed, role: 'user' }).save();
@@ -20,15 +30,22 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  if (!errors.isEmpty()) {
+    throw httpError(400, 'Niepoprawne dane wejściowe');
+  }
 
   const { username, password } = req.body;
   const user = await User.findOne({ username });
+
   if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ error: 'Nieprawidłowe dane logowania' });
+    throw httpError(401, 'Nieprawidłowe dane logowania');
   }
 
-  const token = jwt.sign({ id: user._id, role: user.role }, SECRET, { expiresIn: '1h' });
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    SECRET,
+    { expiresIn: '1h' }
+  );
 
   res.json({ token });
 };

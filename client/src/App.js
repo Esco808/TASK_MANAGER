@@ -61,9 +61,24 @@ const App = () => {
   };
 
   const register = async () => {
-    if (!username || !password) return setFormError('Pola nie mogą być puste');
-    await axios.post(`${API}/register`, { username, password });
-    login();
+    if (!username || !password) {
+      setFormError('Pola nie mogą być puste');
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/register`, { username, password });
+      setFormError('');
+      await login();
+    } catch (err) {
+      if (err.response?.status === 409) {
+        setFormError('Użytkownik już istnieje');
+      } else if (err.response?.data?.error) {
+        setFormError(err.response.data.error);
+      } else {
+        setFormError('Błąd rejestracji. Spróbuj ponownie.');
+      }
+    }
   };
 
   const logout = () => {
@@ -110,7 +125,6 @@ const App = () => {
       setTasks([]);
     }
   };
-
 
   const loadTasks = async (boardId) => {
     const res = await axios.get(`${API}/tasks/${boardId}`, authHeader);

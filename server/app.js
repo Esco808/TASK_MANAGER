@@ -32,4 +32,23 @@ app.use('/api/boards', boardRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/admin', adminRoutes);
 
+app.use((req, res) => {
+  res.status(404).json({ error: 'Nie znaleziono zasobu' });
+});
+
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+
+  if (err.code === 11000) {
+    return res.status(409).json({ error: 'Wartość musi być unikalna' });
+  }
+
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ error: 'Błąd walidacji', details: err.errors });
+  }
+
+  console.error(err);
+  res.status(status).json({ error: err.message || 'Błąd serwera' });
+});
+
 module.exports = app;

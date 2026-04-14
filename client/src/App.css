@@ -52,6 +52,20 @@ header {
   margin-bottom: 20px;
 }
 
+@media (max-width: 600px) {
+  header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  header button {
+    margin-left: 0; /* Reset marginu dla urządzeń mobilnych */
+    width: 100%;
+  }
+}
+
 header h2 {
   margin: 0;
 }
@@ -130,6 +144,12 @@ header button:hover {
 .columns {
   display: flex;
   gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .columns {
+    flex-direction: column; /* Ustawienie kolumn jedna pod drugą */
+  }
 }
 
 .column {

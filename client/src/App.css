@@ -52,20 +52,6 @@ header {
   margin-bottom: 20px;
 }
 
-@media (max-width: 600px) {
-  header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    text-align: center;
-  }
-  
-  header button {
-    margin-left: 0; /* Reset marginu dla urządzeń mobilnych */
-    width: 100%;
-  }
-}
-
 header h2 {
   margin: 0;
 }
@@ -82,6 +68,20 @@ header button {
 
 header button:hover {
   background-color: #7f5419;
+}
+
+@media (max-width: 600px) {
+  header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  header button {
+    margin-left: 0; /* Reset marginu dla urządzeń mobilnych */
+    width: 100%;
+  }
 }
 
 /* Lista tablic */

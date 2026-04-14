@@ -34,6 +34,10 @@ app.use('/api/boards', boardRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/admin', adminRoutes);
 
+app.get('/keep-alive', (req, res) => {
+  res.status(200).send('OK');
+});
+
 app.use((req, res) => {
   res.status(404).json({ error: 'Nie znaleziono zasobu' });
 });

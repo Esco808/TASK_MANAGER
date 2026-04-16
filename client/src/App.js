@@ -10,7 +10,23 @@ import AdminPanel from './components/AdminPanel';
 const API = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const App = () => {
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
+    const [token, setToken] = useState(() => {
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) {
+      try {
+        const decoded = jwtDecode(savedToken);
+        // Sprawdzamy wygaśnięcie ZANIM ustawimy token w stanie początkowym
+        if (decoded.exp * 1000 >= Date.now()) {
+          return savedToken; // Token jest ok
+        }
+      } catch (err) {
+        console.error('Błąd weryfikacji początkowej tokena:', err);
+      }
+    }
+    // Jeśli tokenu nie ma, jest zły lub wygasł, od razu czyścimy śmieci
+    localStorage.removeItem('token');
+    return '';
+  });
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [boards, setBoards] = useState([]);
@@ -30,17 +46,42 @@ const App = () => {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
+    const currentToken = localStorage.getItem('token');
+    if (currentToken) {
       try {
-        const decoded = jwtDecode(token);
-        setUserRole(decoded.role || '');
+        const decoded = jwtDecode(currentToken);
+        // decoded.exp określa czas wygaśnięcia w sekundach, Date.now() zwraca milisekundy
+        if (decoded.exp * 1000 < Date.now()) {
+          console.warn('Token wygasł, następuje wylogowanie.');
+          logout();
+        } else {
+          setUserRole(decoded.role || '');
+        }
       } catch (err) {
-        console.error('Błąd dekodowania tokena:', err);
-        setUserRole('');
+        console.error('Błąd dekodowania tokena/Nieprawidłowy token:', err);
+        logout();
       }
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Globalny interceptor do wychwytywania błędów 401 Unauthorized i 403 Forbidden z backendu
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          // Jeżeli backend odrzucił żądanie z powodu autoryzacji - wyloguj
+          logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    // Czyszczenie interceptora, gdy komponent jest niszczony
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
